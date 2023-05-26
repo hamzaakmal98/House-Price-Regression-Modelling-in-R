@@ -1,0 +1,137 @@
+
+R CODE:
+
+
+install.packages("pacman")
+require(pacman) 
+library(pacman)
+pacman::p_load(pacman, dplyr, GGally, ggplot2, ggthemes, 
++   ggvis, httr, lubridate, plotly, rio, rmarkdown, shiny, 
++   stringr, tidyr) 
+
+library(datasets)
+
+pacman::p_load(pacman, rio)
+rio_csv <- import("~/Desktop/kc_house_data.csv")
+head(rio_csv)
+
+pacman::p_load(pacman, caret, lars, tidyverse)
+
+data <- rio_csv
+
+Q1 <- quantile(data$bedroom, .25)
+Q3 <- quantile(data$bedroom, .75)
+IQR <- IQR(data$bedroom)
+
+no_outliers <- subset(data, data$bedroom> (Q1 - 1.5*IQR) & data$bedroom< (Q3 + 1.5*IQR))
+boxplot(no_outliers$bedroom)
+
+boxplot(no_outliers$bedroom, data = no_outliers, main = "Five-number summary for bedrooms")
+summary(no_outliers$bedroom)
+
+Q1 <- quantile(data$bathroom, .25)
+Q3 <- quantile(data$bathroom, .75)
+IQR <- IQR(data$bathroom)
+
+no_outliers <- subset(data, data$bathroom> (Q1 - 1.5*IQR) & data$bathroom< (Q3 + 1.5*IQR))
+boxplot(no_outliers$bathroom, data = no_outliers, main = "Five-number summary for bathroom")
+summary(no_outliers$bathrooms)
+
+Q1 <- quantile(data$sqft_living, .25)
+Q3 <- quantile(data$sqft_living, .75)
+IQR <- IQR(data$sqft_living)
+
+
+no_outliers <- subset(data, data$sqft_living> (Q1 - 1.5*IQR) & data$sqft_living< (Q3 + 1.5*IQR))
+boxplot(no_outliers$sqft_living, data = no_outliers, main = "Five-number summary for sqft_living")
+summary(no_outliers$sqft_living)
+
+Q1 <- quantile(data$floors, .25)
+Q3 <- quantile(data$floors, .75)
+IQR <- IQR(data$floors)
+
+no_outliers <- subset(data, data$floors> (Q1 - 1.5*IQR) & data$floors< (Q3 + 1.5*IQR))
+boxplot(no_outliers$floors, data = no_outliers, main = "Five-number summary for floors")
+summary(no_outliers$floors)
+
+Q1 <- quantile(data$sqft_above, .25)
+Q3 <- quantile(data$sqft_above, .75)
+IQR <- IQR(data$sqft_above)
+
+no_outliers <- subset(data, data$sqft_above> (Q1 - 1.5*IQR) & data$sqft_above< (Q3 + 1.5*IQR))
+boxplot(no_outliers$sqft_above, data = no_outliers, main = "Five-number summary for sqft_above")
+summary(no_outliers$sqft_above)
+
+Q1 <- quantile(data$yr_built, .25)
+Q3 <- quantile(data$yr_built, .75)
+IQR <- IQR(data$yr_built)
+
+no_outliers <- subset(data, data$yr_built> (Q1 - 1.5*IQR) & data$yr_built< (Q3 + 1.5*IQR))
+boxplot(no_outliers$yr_built, data = no_outliers, main = "Five-number summary for yr_built")
+summary(no_outliers$yr_built)
+
+Q1 <- quantile(data$price, .25)
+Q3 <- quantile(data$price, .75)
+IQR <- IQR(data$price)
+
+no_outliers <- subset(data, data$price> (Q1 - 1.5*IQR) & data$price< (Q3 + 1.5*IQR))
+boxplot(no_outliers$price, data = no_outliers, main = "Five-number summary for price")
+summary(no_outliers$yr_built)
+
+
+plot(no_outliers$bedrooms,no_outliers$price, col = "#cc0000",   pch = 19,    
+   main = "Price of House vs. Number of Bedrooms",
+   xlab = "Number of Bedrooms",
+   ylab = "Price of House")
+
+
+plot(no_outliers$bathrooms,no_outliers$price, col = "#cc0000",   pch = 19,    
+   main = "Price of House vs. Number of Bathrooms",
+   xlab = "Number of Bathrooms",
+   ylab = "Price of House")
+
+plot(no_outliers$sqft_living,no_outliers$price, col = "#cc0000",   pch = 19,    
+   main = "Price of House vs. Square Feet of Living Room",
+   xlab = "Square Feet of Living Room",
+   ylab = "Price of House")
+
+
+plot(no_outliers$floors,no_outliers$price, col = "#cc0000",   pch = 19,    
+   main = "Price of House vs. Number of Floors",
+   xlab = "Number of Floors",
+   ylab = "Price of House")
+
+plot(no_outliers$sqft_above,no_outliers$price, col = "#cc0000",   pch = 19,    
+   main = "Price of House vs. Square Feet above sea level",
+   xlab = "Square Feet above sea level",
+   ylab = "Price of House")
+
+
+plot(no_outliers$yr_built,no_outliers$price, col = "#cc0000",   pch = 19,    
+   main = "Price of House vs. Year Built",
+   xlab = "Year Built",
+   ylab = "Price of House")
+
+Mean_of_no_outliers = mean(no_outliers$price)
+sd_of_no_outliers = sd(no_outliers$price)
+x = (sd_of_no_outliers/sqrt(21605)) * 1.97
+LB =Mean_of_no_outliers - x
+UB = Mean_of_no_outliers  + x
+
+
+hist(no_outliers$price, col='red', main='Price of House%')
+normal_dist_graph = dnorm(no_outliers$price, Mean_of_no_outliers , sd_of_no_outliers)
+plot(no_outliers$price, y, col='green', xlab='Price of House', main='Probability Distribution')
+qqnorm(no_outliers$price,  col = "#cc0000" )
+qqline(no_outliers$price,  col = "#cc0000")
+
+reg1 <- lm(price ~ bedrooms + bathrooms  + floors + sqft_living + sqft_above + yr_built, data = rio_csv)
+summary(reg1)
+
+residuals_vs_normal_graph = rstandard(reg1)
+qqnorm(residuals_vs_normal_graph,ylab="Standardized Residuals", xlab="Normality Check", col = "#cc0000")
+
+anova(reg1)            # Coefficients w/inferential tests
+coef(reg1)             # Coefficients (same as reg1)
+confint(reg1)          # CI for coefficients
+hist(residuals(reg1))  # Histogram of residuals
