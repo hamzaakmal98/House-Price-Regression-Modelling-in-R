@@ -1,7 +1,3 @@
-
-R CODE:
-
-
 install.packages("pacman")
 require(pacman) 
 library(pacman)
